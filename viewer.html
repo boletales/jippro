@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>.notes.jsonのnotesを見るhtml</title>
+    <style>
+        body{
+            background: #111;
+        }
+        #contents{
+            color:white;
+        }
+        #canvas{
+            margin: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="contents">
+        <input type="file" id="file" accept="application/json"><br>
+        <span id="data"></span>
+    </div>
+    <canvas id="canvas"></canvas>
+    <script>
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+        if(false){
+            var note_height = 2;
+            var note_width = 5;
+            var note_margin = 1;
+            var time_mag = 0.07;
+        }else{
+            var note_height = 5;
+            var note_width = 18;
+            var note_margin = 0;
+            var time_mag = 0.20;
+        }
+        let color = {"white":"#FFF","blue":"#00D","scratch":"#E00","line":"#444","bgb":"#111","bgw":"#222"};
+        document.getElementById("file").addEventListener('change', function (e) {
+            load(e.target.files[0]);
+        });
+        function load(file){
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                let data = JSON.parse(e.target.result);
+                draw(data);
+                document.getElementById("data").innerText = (data.dai2!=-1?"▽"+data.dai2:"")+" "+data.genre+" / "+data.title+" (written by: "+data.artist+")"+" "+data.notes.length+"notes";
+            }
+            reader.readAsText(file);
+        }
+        function draw(data){
+            let notes = data.notes;
+            let measurelines = data.measurelines;
+            let time_start = notes[0][0]-1000;
+            let time_end = notes[notes.length-1][0]+1000;
+            canvas.height = (time_end-time_start)*time_mag;
+            canvas.width = (note_width+note_margin)*9 - note_margin;
+            scrollTo(0,canvas.height);
+            for(let i=0;i<7;i++){
+                ctx.fillStyle = (i%2==0 ? color.bgw : color.bgb);
+                ctx.fillRect((note_width+note_margin)*(i), 0, note_width, canvas.height);
+            }
+            ctx.beginPath();
+            measurelines.forEach(line=>{
+                ctx.moveTo(0,            (time_end-line)*time_mag+note_height/2);
+                ctx.lineTo(canvas.width, (time_end-line)*time_mag+note_height/2);
+            });
+            ctx.strokeStyle = color.line;
+            ctx.stroke();
+            notes.forEach(note => {
+                if(note[1]<7){
+                    ctx.fillStyle = (note[1]%2==0 ? color.white : color.blue);
+                    ctx.fillRect((note_width+note_margin)*(note[1]), (time_end-note[0])*time_mag, note_width, note_height);
+                }else if(note[1]==7){
+                    ctx.fillStyle = color.scratch;
+                    ctx.fillRect((note_width+note_margin)*7, (time_end-note[0])*time_mag, note_width*2, note_height);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

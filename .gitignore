@@ -1,0 +1,16 @@
+bms/*
+__pycache__/*
+__result/*
+_result/*
+result/*
+samples/*
+archive/*
+document/*
+node_modules/*
+test1.py
+test2.py
+test2_speed.py
+keycount.py
+dai2modoki_data.json
+dai2modoki_header.json
+dai2modoki_QMS.json
